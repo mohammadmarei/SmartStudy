@@ -15,7 +15,6 @@ return new class extends Migration {
             $table->foreignId("subject_id")
                 ->constrained()
                 ->onDelete('cascade');
-
             $table->string("file_name");
             $table->string("file_path");
             $table->enum("file", ["pdf", "docx"]);
