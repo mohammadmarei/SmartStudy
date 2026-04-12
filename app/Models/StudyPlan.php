@@ -6,5 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudyPlan extends Model
 {
-    //
+    protected $fillable = [
+        'user_id',
+        'subject_id',
+        'goal',
+        'start_date',
+        'end_date',
+        'status'
+    ];
 }
