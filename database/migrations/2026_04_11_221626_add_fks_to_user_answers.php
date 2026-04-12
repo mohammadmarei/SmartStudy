@@ -36,7 +36,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('user_answers', function (Blueprint $table) {
-            //
-        });
+        $table->dropForeign(['question_id']);
+        $table->dropForeign(['quiz_id']);
+        $table->dropForeign(['option_id']);
+    });
     }
 };
