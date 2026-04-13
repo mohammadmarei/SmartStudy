@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\loginRequest;
+use App\Http\Requests\registerRequest;
 use App\Models\Auth;
+use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Throwable;
@@ -41,6 +43,17 @@ class AuthController extends Controller
                 'trace' => $e->getTraceAsString(),
             ], 500);
         }
+    }
+
+    public function register(registerRequest $request)
+    {
+        $result = $this->authService->register($request->validated());
+
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $result['user'],
+            'token' => $result['token']
+        ]);
     }
 
 }
