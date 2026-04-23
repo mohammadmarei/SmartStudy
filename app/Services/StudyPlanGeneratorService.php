@@ -2,8 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\WeakArea;
-use App\Models\Performance;
+use App\Models\Result;
 use App\Models\StudyPlan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -13,8 +12,19 @@ class StudyPlanGeneratorService
     public function generateForUser(int $userId)
     {
         return DB::transaction(function () use ($userId) {
-            $weakAreas = WeakArea::where('user_id', $userId)->get();
-            $performances = Performance::where('user_id', $userId)->get()->keyBy('subject_id');
+            $results = Result::with('quiz.subject')
+                ->where('user_id', $userId)
+                ->get()
+                ->filter(fn($result) => $result->quiz && $result->quiz->subject)
+                ->values();
+
+            if ($results->isEmpty()) {
+                StudyPlan::where('user_id', $userId)->delete();
+
+                return collect([]);
+            }
+
+            $groupedBySubject = $results->groupBy(fn($result) => $result->quiz->subject_id);
 
             $previousPlans = StudyPlan::where('user_id', $userId)
                 ->latest()
@@ -23,23 +33,30 @@ class StudyPlanGeneratorService
 
             $generatedPlans = [];
 
-            foreach ($weakAreas as $weakArea) {
-                $performance = $performances->get($weakArea->subject_id);
+            foreach ($groupedBySubject as $subjectId => $subjectResults) {
+                $subject = $subjectResults->first()->quiz->subject;
 
-                $lastGoal = optional($previousPlans->get($weakArea->subject_id)?->first())->goal;
+                $averageScore = round($subjectResults->avg('score'), 2);
 
-                $priorityScore = $this->calculatePriority($weakArea, $performance);
-                $taskType = $this->decideTaskType($weakArea, $lastGoal);
+                $successRate = round(
+                    $subjectResults->filter(fn($item) => $item->score >= 50)->count() * 100 / max($subjectResults->count(), 1),
+                    2
+                );
+
+                $lastGoal = optional($previousPlans->get($subjectId)?->first())->goal;
+
+                $priorityScore = $this->calculatePriority($averageScore, $successRate);
+                $taskType = $this->decideTaskType($averageScore, $lastGoal);
 
                 $generatedPlans[] = [
                     'user_id' => $userId,
-                    'subject_id' => $weakArea->subject_id,
-                    'goal' => $this->buildGoalText($taskType, $weakArea->topic_name),
+                    'subject_id' => $subjectId,
+                    'goal' => $this->buildGoalText($taskType, $subject->name),
                     'priority_score' => $priorityScore,
                 ];
             }
 
-            usort($generatedPlans, fn ($a, $b) => $b['priority_score'] <=> $a['priority_score']);
+            usort($generatedPlans, fn($a, $b) => $b['priority_score'] <=> $a['priority_score']);
 
             StudyPlan::where('user_id', $userId)->delete();
 
@@ -61,34 +78,30 @@ class StudyPlanGeneratorService
         });
     }
 
-    private function calculatePriority($weakArea, $performance): int
+    private function calculatePriority(float $averageScore, float $successRate): int
     {
         $score = 0;
 
-        if ($weakArea->weakness_level === 'High') {
+        if ($averageScore < 50) {
             $score += 50;
-        } elseif ($weakArea->weakness_level === 'Medium') {
+        } elseif ($averageScore < 70) {
             $score += 30;
         } else {
             $score += 10;
         }
 
-        $score += $weakArea->times_mistaken * 5;
+        $score += (100 - $successRate);
 
-        if ($performance) {
-            $score += (100 - $performance->success_rate);
-        }
-
-        return $score;
+        return (int) $score;
     }
 
-    private function decideTaskType($weakArea, ?string $lastGoal = null): string
+    private function decideTaskType(float $averageScore, ?string $lastGoal = null): string
     {
         $types = ['Review', 'Quiz', 'Summary'];
 
-        if ($weakArea->weakness_level === 'High') {
+        if ($averageScore < 50) {
             $preferred = 'Review';
-        } elseif ($weakArea->times_mistaken >= 4) {
+        } elseif ($averageScore < 70) {
             $preferred = 'Quiz';
         } else {
             $preferred = 'Summary';
@@ -97,7 +110,7 @@ class StudyPlanGeneratorService
         if ($lastGoal) {
             foreach ($types as $type) {
                 if (stripos($lastGoal, $type) !== false) {
-                    $types = array_values(array_filter($types, fn ($t) => $t !== $type));
+                    $types = array_values(array_filter($types, fn($t) => $t !== $type));
                     break;
                 }
             }
@@ -112,13 +125,13 @@ class StudyPlanGeneratorService
         return $preferred;
     }
 
-    private function buildGoalText(string $taskType, string $topic): string
+    private function buildGoalText(string $taskType, string $subjectName): string
     {
         return match ($taskType) {
-            'Review' => "Review {$topic} concepts",
-            'Quiz' => "Take a quiz on {$topic}",
-            'Summary' => "Read summary of {$topic}",
-            default => "Study {$topic}",
+            'Review' => "Review key topics in {$subjectName}",
+            'Quiz' => "Take a quiz in {$subjectName}",
+            'Summary' => "Read summary of {$subjectName}",
+            default => "Study {$subjectName}",
         };
     }
 }
