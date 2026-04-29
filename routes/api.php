@@ -6,6 +6,8 @@ use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\StudyPlanController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 
 Route::get('/study-plans', [StudyPlanController::class, 'index']);
 Route::post('/study-plans', [StudyPlanController::class, 'store']);
@@ -13,8 +15,23 @@ Route::post('/study-plans', [StudyPlanController::class, 'store']);
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-Route::post('/login',[AuthController::class,'login']); 
-Route::post('/register',[AuthController::class,'register']); 
+
+
+Route::post('/login',[AuthController::class,'login']);
+Route::post('/register',[AuthController::class,'register']);
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+
+
+Route::middleware('auth:sanctum')->get('/profile', [ProfileController::class, 'show']);
+Route::middleware('auth:sanctum')->post('/profile', [ProfileController::class, 'upsert']);
+
+Route::middleware('auth:sanctum')->put('/user', [UserController::class, 'update']);
+Route::middleware('auth:sanctum')->put('/user/password', [UserController::class, 'changePassword']);
+Route::middleware('auth:sanctum')->delete('/user', [UserController::class, 'destroy']);
+
+
+
+
 Route::middleware('auth:sanctum')->get('/subjects', [SubjectController::class, 'index']);
 Route::middleware('auth:sanctum')->post('/subjects', [SubjectController::class, 'store']);
 Route::middleware('auth:sanctum')->get('/subjects/{id_subject}', [SubjectController::class, 'show']);
