@@ -14,12 +14,13 @@ class UserController extends Controller
 
         $newData = $request->only(['full_name', 'username', 'email']);
 
-        if (!$user->isDirty($newData) && $user->fill($newData)->isDirty() === false) {
-            return response()->json([
-                'message' => 'No changes detected.',
-                'user'    => $user->load('profile'),
-            ], 200);
+        $user->fill($newData);
+        if (!$user->isDirty()) {
+            return response()->json(['message' => 'No changes detected.',
+
+                'user' => $user->load('profile')], 200);
         }
+        $user->save();
 
         $user->update($newData);
         $user->load('profile');
@@ -37,7 +38,7 @@ class UserController extends Controller
         if (!Hash::check($request->current_password, $user->password_hash)) {
             return response()->json([
                 'message' => 'Current password is incorrect.',
-            ], 401);
+            ], 422);
         }
 
         if (Hash::check($request->password, $user->password_hash)) {

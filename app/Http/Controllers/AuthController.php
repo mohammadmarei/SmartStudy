@@ -4,49 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-use App\Services\AuthService;
-use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use App\Models\Profile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
-    private AuthService $authService;
-
-    public function __construct(AuthService $authService)
-    {
-        $this->authService = $authService;
-    }
 
     public function login(LoginRequest $request)
     {
-
-
         try {
-            $login = $this->authService->login($request);
+            $user = User::where('email', $request->email)
+                ->with('profile')
+                ->first();
 
-            if ($login['status'] === 401) {
+            if (!$user || !Hash::check($request->password, $user->password_hash)) {
                 return response()->json([
-                    'message' => $login['message'],
+                    'message' => 'Email or password is incorrect.',
                 ], 401);
             }
 
-
-
-            if ($login['status'] !== 200) {
-                return response()->json([
-                    'message' => $login['message'],
-                ], $login['status']);
-            }
-
-            $profileImage = $login['user']['profile']['avatar'] ?? null;
+            $token = $user->createToken('api-token')->plainTextToken;
+            $profileImage = $user->profile?->avatar ?? null;
 
             return response()->json([
-                'message' => $login['message'],
-                'token'   => $login['token'],
+                'message' => 'Login successful.',
+                'token'   => $token,
                 'user'    => [
-                    'full_name'     => $login['user']['full_name'] ?? null,
-                    'username'      => $login['user']['username'] ?? null,
-                    'email'         => $login['user']['email'] ?? null,
+                    'full_name'     => $user->full_name,
+                    'username'      => $user->username,
+                    'email'         => $user->email,
                     'profile_image' => $profileImage,
                 ],
             ], 200);
@@ -61,12 +51,28 @@ class AuthController extends Controller
         }
     }
 
+
     public function register(RegisterRequest $request)
     {
-
-
         try {
-            $result = $this->authService->register($request->validated());
+            $data = $request->validated();
+
+            $result = DB::transaction(function () use ($data) {
+                $user = User::create([
+                    'full_name'       => $data['full_name'],
+                    'username'        => $this->generateUsername($data['full_name']),
+                    'email'           => $data['email'],
+                    'password_hash'   => Hash::make($data['password']),
+                    'role_id'         => $data['role_id'] ?? 1,
+                    'agreed_to_terms' => $data['agreed_to_terms'] ?? false,
+                ]);
+
+                Profile::create(['user_id' => $user->id]);
+
+                $token = $user->createToken('api-token')->plainTextToken;
+
+                return ['user' => $user, 'token' => $token];
+            });
 
             return response()->json([
                 'message' => 'User registered successfully.',
@@ -94,14 +100,14 @@ class AuthController extends Controller
         }
     }
 
+
     public function logout(Request $request)
     {
-
         try {
-            $result = $this->authService->logout($request->user());
+            $request->user()->currentAccessToken()->delete();
 
             return response()->json([
-                'message' => $result['message'],
+                'message' => 'Logged out successfully.',
             ], 200);
 
         } catch (\Throwable $e) {
@@ -112,5 +118,21 @@ class AuthController extends Controller
 
             return response()->json(['message' => 'Server error. Please try again later.'], 500);
         }
+    }
+
+
+    private function generateUsername(string $fullName): string
+    {
+        $base = trim(str_replace(' ', '.', strtolower(trim($fullName))), '.');
+
+        $username = $base;
+        $counter  = 1;
+
+        while (User::withTrashed()->where('username', $username)->exists()) {
+            $username = $base . $counter;
+            $counter++;
+        }
+
+        return $username;
     }
 }

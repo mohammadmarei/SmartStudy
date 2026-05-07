@@ -39,7 +39,7 @@ class ProfileController extends Controller
             $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
-        // نعرف إذا كان البروفايل موجود قبل
+
         $exists = Profile::where('user_id', $user->id)->exists();
 
         $profile = Profile::updateOrCreate(
