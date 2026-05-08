@@ -8,7 +8,7 @@ class Subject extends Model
 {
     protected $table = "subjects";
 
-    protected $fileable = [
+    protected $fillable = [
         "user_id",
         "name",
         "color"

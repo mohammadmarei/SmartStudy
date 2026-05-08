@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Result extends Model
 {
     //
-     use HasFactory;
+/*      use HasFactory; */
      protected $fillable = [
         'user_id',
         'quiz_id',
@@ -21,13 +21,22 @@ class Result extends Model
         'start_time' => 'datetime',
         'end_time' => 'datetime',
     ];
-    public function user()
+ /*    public function user()
     {
         return $this->belongsTo(User::class);
-    }
+    } */
     public function quiz()
     {
         return $this->belongsTo(AiQuiz::class,'quiz_id');
     }
-    protected $with=['user','quiz'];
+    public function userAnswers()
+    {
+        return $this->hasMany(UserAnswer::class,'result_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
 }

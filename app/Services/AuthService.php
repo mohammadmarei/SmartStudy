@@ -12,7 +12,7 @@ class AuthService
     {
         return DB::transaction(function () use ($data) {
             $user = User::where('email', $data->email)->first();
-            if (!$user || !Hash::check($data->password, $user->password)) {
+            if (!$user || !Hash::check($data->password, $user->password_hash)) {
                 return [
                     "message" => "Email or password is incorrect",
                     'status' => 401
