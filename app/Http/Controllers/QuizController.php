@@ -52,7 +52,6 @@ class QuizController extends Controller
     ]);
 
     $quiz = AiQuiz::with('questions.options')->find($quizId);
-
     if (!$quiz) {
         return response()->json([
             'message' => 'Quiz not found'
@@ -87,11 +86,17 @@ class QuizController extends Controller
 
             $selectedOptionId = (int) $submittedAnswer['option_id'];
 
-            $correctOption = $question->options->firstWhere('is_correct', true);
+           /*  $correctOption = $question->options->firstWhere('is_correct', true);
 
             $isCorrect = $correctOption && $correctOption->id === $selectedOptionId;//////
 
-            if ($isCorrect) {
+            if ($isCorrect) { */
+            $selectedOption = $question->options->firstWhere('id', $selectedOptionId);
+
+             if(!$selectedOption) {
+                continue;
+                    }
+            $isCorrect = (bool) $selectedOption->is_correct;
                 $score++;
                 $correctAnswers++;
             }
@@ -139,5 +144,6 @@ class QuizController extends Controller
     ], 500);
     }
 }
+
 
     }

@@ -3,22 +3,32 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QuestionOption extends Model
 {
-    //
+    protected $table = 'question_options';
+
+    public $timestamps = false;
+
     protected $fillable = [
         'question_id',
         'option_label',
         'option_text',
-        'is_correct'
+        'is_correct',
     ];
-    public $timestamps = false;
-    public function question()
+
+    protected $casts = [
+        'is_correct' => 'boolean',
+    ];
+
+    public function question(): BelongsTo
     {
         return $this->belongsTo(AiQuestion::class, 'question_id');
     }
-    public function userAnswers()
+
+    public function userAnswers(): HasMany
     {
         return $this->hasMany(UserAnswer::class, 'option_id');
     }

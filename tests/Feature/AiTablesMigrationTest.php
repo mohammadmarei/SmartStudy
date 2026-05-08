@@ -41,7 +41,6 @@ class AiTablesMigrationTest extends TestCase
             'subject_id' => $subjectId,
             'file_name' => 'notes.pdf',
             'file_path' => '/storage/notes.pdf',
-            'file' => 'pdf',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -127,7 +126,6 @@ class AiTablesMigrationTest extends TestCase
             'subject_id' => $subjectId,
             'file_name' => 'lab.pdf',
             'file_path' => '/storage/lab.pdf',
-            'file' => 'pdf',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

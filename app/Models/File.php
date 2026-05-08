@@ -6,7 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class File extends Model
 {
-    //
-    protected $fillable = ['subject_id', 'file_path', 'file_name', 'file'];
+     protected $table="files";
+     protected $fillable=[
+        "subject_id",
+        "file_name",
+        "file_path",
+        'file',
+     ];
+
+     public function subject():BelongsTo
+     {
+        return $this->belongsTo(Subject::class,'subject_id');
+     }
 }
 
