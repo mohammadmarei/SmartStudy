@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com'),
+        // Note: Anthropic does not currently publish a "Sonnet 4.7" model id.
+        // Keep this configurable so you can switch without code changes.
+        'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-4-6'),
+        'version' => env('ANTHROPIC_VERSION', '2023-06-01'),
+    ],
+
 ];

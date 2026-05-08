@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\StudyPlanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AiContentController;
 
 Route::get('/study-plans', [StudyPlanController::class, 'index']);
 Route::post('/study-plans', [StudyPlanController::class, 'store']);
@@ -40,3 +41,6 @@ Route::middleware('auth:sanctum')->delete('/subjects/{id}', [SubjectController::
 
 Route::middleware('auth:sanctum')->post('/files', [FileController::class, 'store']);
 Route::middleware('auth:sanctum')->delete('/files/{file}', [FileController::class, 'destroy']);
+
+Route::middleware('auth:sanctum')->post('/ai/summaries', [AiContentController::class, 'generateSummary']);
+Route::middleware('auth:sanctum')->post('/ai/quizzes', [AiContentController::class, 'generateQuiz']);
