@@ -93,10 +93,13 @@ class QuizController extends Controller
             if ($isCorrect) { */
             $selectedOption = $question->options->firstWhere('id', $selectedOptionId);
 
-             if(!$selectedOption) {
+            if (!$selectedOption) {
                 continue;
-                    }
+            }
+
             $isCorrect = (bool) $selectedOption->is_correct;
+
+            if ($isCorrect) {
                 $score++;
                 $correctAnswers++;
             }
@@ -133,17 +136,15 @@ class QuizController extends Controller
                 'accuracy' => $accuracy,
             ]
         ]);
-    } catch (\Exception $e) {
-        DB::rollBack();
+        } catch (\Exception $e) {
+            DB::rollBack();
 
-        return response()->json([
-        'message' => 'Failed to submit quiz',
-        'error' => $e->getMessage(),
-        'line' => $e->getLine(),
-        'file' => $e->getFile(),
-    ], 500);
+            return response()->json([
+                'message' => 'Failed to submit quiz',
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ], 500);
+        }
     }
 }
-
-
-    }

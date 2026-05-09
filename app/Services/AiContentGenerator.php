@@ -155,14 +155,14 @@ class AiContentGenerator
                 );
 
                 $parsed = $this->parseJson($out);
-
+                $timeLimit = max(5, $questionCount * 2);
                 $quiz = AiQuiz::create([
                    'job_id' => $job->id,
                     'subject_id' => $subject->id,
                     'content_id' => $material->id,
                     'title' => $subject->name . ' Quiz - ' . ucfirst($difficulty),
                     'difficulty' => $difficulty,
-                    'time_limit' => 30,
+                    'time_limit' => $timeLimit,
                 ]);
 
                 $questions = is_array($parsed['questions'] ?? null) ? $parsed['questions'] : [];
