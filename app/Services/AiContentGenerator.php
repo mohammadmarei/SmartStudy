@@ -149,7 +149,7 @@ class AiContentGenerator
                     ],
                     [
                         'model' => $job->model_used,
-                        'max_tokens' => 1800,
+                        'max_tokens' => 8192,
                         'temperature' => 0.3,
                     ]
                 );
@@ -233,19 +233,41 @@ class AiContentGenerator
     private function parseJson(string $raw): array
     {
         $raw = trim($raw);
+        $raw = $this->stripMarkdownJsonFence($raw);
+
         $decoded = json_decode($raw, true);
         if (is_array($decoded)) {
             return $decoded;
         }
 
         if (preg_match('/\{[\s\S]*\}/', $raw, $m)) {
-            $decoded = json_decode($m[0], true);
+            $candidate = $this->stripMarkdownJsonFence(trim($m[0]));
+            $decoded = json_decode($candidate, true);
             if (is_array($decoded)) {
                 return $decoded;
             }
         }
 
         throw new \RuntimeException('Model output was not valid JSON.');
+    }
+
+    /**
+     * Models often wrap JSON in ```json ... ``` despite instructions not to.
+     */
+    private function stripMarkdownJsonFence(string $raw): string
+    {
+        $raw = trim($raw);
+        if (preg_match('/^```(?:json)?\s*\R?([\s\S]*?)\R?```$/mi', $raw, $m)) {
+            return trim($m[1]);
+        }
+        // Opening fence only (some streams close inconsistently)
+        if (preg_match('/^```(?:json)?\s*\R?([\s\S]+)$/mi', $raw, $m)) {
+            $inner = preg_replace('/\R?```\s*$/', '', trim($m[1])) ?? trim($m[1]);
+
+            return trim($inner);
+        }
+
+        return $raw;
     }
 
     private function summaryPrompt(string $subjectName, string $materialText, int $keyPoints): string
