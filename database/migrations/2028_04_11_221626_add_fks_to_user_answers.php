@@ -17,11 +17,11 @@ return new class extends Migration
         ->references('id')
         ->on('ai_questions')
         ->onDelete('cascade');
-
+/* 
     $table->foreign('quiz_id')
         ->references('id')
         ->on('ai_quizzes')
-        ->onDelete('cascade');
+        ->onDelete('cascade'); */
 
     $table->foreign('option_id')
         ->references('id')

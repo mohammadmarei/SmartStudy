@@ -13,20 +13,20 @@ return new class extends Migration
     {
         Schema::create('user_answers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+/*             $table->foreignId('user_id')->constrained()->onDelete('cascade'); */
             $table->foreignId('question_id');
             //->constrained("ai_questions")->onDelete('cascade');
-            $table->foreignId('quiz_id');
+          /*   $table->foreignId('quiz_id'); */
             //->constrained("ai_quizzes")->onDelete('cascade');
             $table->foreignId("result_id")->constrained()->onDelete('cascade');
             $table->foreignId("option_id");
             //->constrained("question_options")->onDelete('cascade');
             $table->boolean('is_correct')->default(false);
             $table->timestamps();
-            $table->unique(
+      /*       $table->unique(
                 ['user_id', 'quiz_id', 'question_id', 'result_id'],
                 'user_quiz_question_unique'
-            );
+            ); */
         });
     }
 
