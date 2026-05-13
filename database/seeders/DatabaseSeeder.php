@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -22,6 +21,9 @@ class DatabaseSeeder extends Seeder
             'password_hash' => Hash::make('password'),
             'role_id' => 1,
             'agreed_to_terms' => true,
+        ]);
+        $this->call([
+            FeatureFiveSeeder::class,
         ]);
     }
 }

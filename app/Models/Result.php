@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Result extends Model
 {
-    //
-/*      use HasFactory; */
-     protected $fillable = [
+    protected $table = 'results';
+
+    protected $fillable = [
         'user_id',
         'quiz_id',
         'score',
@@ -38,5 +38,8 @@ class Result extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
+    public function quiz()
+    {
+        return $this->belongsTo(AiQuiz::class, 'quiz_id');
+    }
 }

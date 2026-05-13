@@ -3,9 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\PerformanceController;
+use App\Http\Controllers\StudyPlanController;
+use App\Http\Controllers\StudyPlanAIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\StudyPlanController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ProfileController;
@@ -38,6 +40,9 @@ Route::middleware('auth:sanctum')->delete('/user', [UserController::class, 'dest
 
 
 
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+
 Route::middleware('auth:sanctum')->get('/subjects', [SubjectController::class, 'index']);
 Route::middleware('auth:sanctum')->post('/subjects', [SubjectController::class, 'store']);
 Route::middleware('auth:sanctum')->get('/subjects/{id_subject}', [SubjectController::class, 'show']);
@@ -49,3 +54,8 @@ Route::middleware('auth:sanctum')->delete('/files/{file}', [FileController::clas
 
 Route::middleware('auth:sanctum')->post('/ai/summaries', [AiContentController::class, 'generateSummary']);
 Route::middleware('auth:sanctum')->post('/ai/quizzes', [AiContentController::class, 'generateQuiz']);
+Route::get('/study-plans', [StudyPlanController::class, 'index']);
+Route::post('/study-plans', [StudyPlanController::class, 'store']);
+
+Route::get('/analytics', [PerformanceController::class, 'index']);
+Route::post('/generate-study-plan/{userId}', [StudyPlanAIController::class, 'generate']);

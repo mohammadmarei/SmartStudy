@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class AiQuiz extends Model
 {
     protected $table = 'ai_quizzes';
-
     public $timestamps = false;
 
     protected $fillable = [
