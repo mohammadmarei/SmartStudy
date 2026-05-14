@@ -17,22 +17,7 @@ class File extends Model
      public function subject():BelongsTo
      {
         return $this->belongsTo(Subject::class,'subject_id');
->>>>>>> origin/Marei
      }
-}
 
-
-        'file',
-     ];
-
-     public function subject():BelongsTo
-     {
-        return $this->belongsTo(Subject::class,'subject_id');
-        
-     ];
-
-     public function subject(){
-        return $this->belongsTo(Subject::class);
-     }
 }
 
