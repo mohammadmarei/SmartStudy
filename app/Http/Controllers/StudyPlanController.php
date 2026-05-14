@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 use App\Models\StudyPlan;
 use Illuminate\Http\Request;
@@ -35,6 +34,6 @@ class StudyPlanController extends Controller
         return response()->json(
             $plan->load('subject'),
             201
-
+        );
     }
 }
