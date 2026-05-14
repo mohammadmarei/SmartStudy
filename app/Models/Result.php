@@ -38,8 +38,4 @@ class Result extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-    public function quiz()
-    {
-        return $this->belongsTo(AiQuiz::class, 'quiz_id');
-    }
 }
