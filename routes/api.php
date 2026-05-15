@@ -52,6 +52,8 @@ Route::middleware('auth:sanctum')->delete('/subjects/{id}', [SubjectController::
 Route::middleware('auth:sanctum')->post('/files', [FileController::class, 'store']);
 Route::middleware('auth:sanctum')->delete('/files/{file}', [FileController::class, 'destroy']);
 
+Route::middleware('auth:sanctum')->get('/ai/summaries', [AiContentController::class, 'indexSummaries']);
+Route::middleware('auth:sanctum')->get('/ai/quizzes', [AiContentController::class, 'indexQuizzes']);
 Route::middleware('auth:sanctum')->post('/ai/summaries', [AiContentController::class, 'generateSummary']);
 Route::middleware('auth:sanctum')->post('/ai/quizzes', [AiContentController::class, 'generateQuiz']);
 Route::middleware('auth:sanctum')->get('/study-plans', [StudyPlanController::class, 'index']);
