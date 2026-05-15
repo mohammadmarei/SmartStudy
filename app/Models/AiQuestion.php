@@ -25,7 +25,7 @@ class AiQuestion extends Model
 
     public function options(): HasMany
     {
-        return $this->hasMany(QuestionOption::class, 'question_id');
+        return $this->hasMany(QuestionOption::class, 'question_id')->orderBy('id');
     }
 
     public function userAnswers(): HasMany

@@ -37,7 +37,7 @@ class AiQuiz extends Model
 
     public function questions(): HasMany
     {
-        return $this->hasMany(AiQuestion::class, 'quiz_id');
+        return $this->hasMany(AiQuestion::class, 'quiz_id')->orderBy('id');
     }
 
     public function results(): HasMany

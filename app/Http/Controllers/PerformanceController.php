@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Result;
@@ -8,12 +9,18 @@ class PerformanceController extends Controller
 {
     public function index()
     {
-        $userId = 1;
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
 
         $results = Result::with('quiz.subject')
             ->where('user_id', $userId)
             ->get()
-            ->filter(fn($result) => $result->quiz && $result->quiz->subject)
+            ->filter(fn ($result) => $result->quiz && $result->quiz->subject)
             ->values();
 
         $weakAreas = WeakArea::with('subject')
@@ -23,15 +30,23 @@ class PerformanceController extends Controller
         $completedQuizzes = $results->count();
 
         $subjectPerformance = $results
-            ->groupBy(fn($result) => $result->quiz->subject_id)
+            ->groupBy(fn ($result) => $result->quiz->subject_id)
             ->map(function ($group) {
                 $first = $group->first();
                 $subject = $first->quiz->subject;
 
-                $averageScore = round($group->avg('score'), 2);
+                $percentages = $group->map(function ($item) {
+                    return $item->total_questions > 0
+                        ? ($item->correct_answers / $item->total_questions) * 100
+                        : 0;
+                });
+
+                $averageScore = round($percentages->avg(), 2);
 
                 $successRate = round(
-                    $group->filter(fn($item) => $item->score >= 50)->count() * 100 / max($group->count(), 1),
+                    $percentages->filter(fn ($percentage) => $percentage >= 50)->count()
+                    * 100
+                    / max($percentages->count(), 1),
                     2
                 );
 
@@ -47,15 +62,23 @@ class PerformanceController extends Controller
 
         $averageScore = round($subjectPerformance->avg('score') ?? 0, 2);
         $successRate = round($subjectPerformance->avg('success_rate') ?? 0, 2);
-        $weakTopicsCount = $weakAreas->count();
+        $weakTopicsCount = \App\Models\UserAnswer::whereHas('result', function ($query) use ($userId) {
+    $query->where('user_id', $userId);
+})
+->where('is_correct', false)
+->count();
 
         $progressOverTime = $results
             ->sortBy('created_at')
             ->values()
             ->map(function ($result, $index) {
+                $scorePercentage = $result->total_questions > 0
+                    ? round(($result->correct_answers / $result->total_questions) * 100, 2)
+                    : 0;
+
                 return [
                     'date' => 'Quiz ' . ($index + 1),
-                    'score' => $result->score,
+                    'score' => $scorePercentage,
                 ];
             });
 
@@ -114,4 +137,3 @@ class PerformanceController extends Controller
         return $recommendations->unique('message')->values()->take(6);
     }
 }
-

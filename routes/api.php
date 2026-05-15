@@ -14,12 +14,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AiContentController;
 
-Route::get('/study-plans', [StudyPlanController::class, 'index']);
-Route::post('/study-plans', [StudyPlanController::class, 'store']);
+Route::middleware('auth:sanctum')->get('/study-plans', [StudyPlanController::class, 'index']);
+Route::middleware('auth:sanctum')->post('/study-plans', [StudyPlanController::class, 'store']);
 //بتجيب اليوزر اللي عامل لوجن
-Route::get('/user', function (Request $request) {
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');
+});
 //بتسجل دخول اليوزر
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/quizzes/{subjectId}', [QuizController::class, 'showByDifficulty']);
@@ -52,10 +52,12 @@ Route::middleware('auth:sanctum')->delete('/subjects/{id}', [SubjectController::
 Route::middleware('auth:sanctum')->post('/files', [FileController::class, 'store']);
 Route::middleware('auth:sanctum')->delete('/files/{file}', [FileController::class, 'destroy']);
 
+Route::middleware('auth:sanctum')->get('/ai/summaries', [AiContentController::class, 'indexSummaries']);
+Route::middleware('auth:sanctum')->get('/ai/quizzes', [AiContentController::class, 'indexQuizzes']);
 Route::middleware('auth:sanctum')->post('/ai/summaries', [AiContentController::class, 'generateSummary']);
 Route::middleware('auth:sanctum')->post('/ai/quizzes', [AiContentController::class, 'generateQuiz']);
-Route::get('/study-plans', [StudyPlanController::class, 'index']);
-Route::post('/study-plans', [StudyPlanController::class, 'store']);
+Route::middleware('auth:sanctum')->get('/study-plans', [StudyPlanController::class, 'index']);
+Route::middleware('auth:sanctum')->post('/study-plans', [StudyPlanController::class, 'store']);
 
-Route::get('/analytics', [PerformanceController::class, 'index']);
-Route::post('/generate-study-plan/{userId}', [StudyPlanAIController::class, 'generate']);
+Route::middleware('auth:sanctum')->get('/analytics', [PerformanceController::class, 'index']);
+Route::middleware('auth:sanctum')->post('/generate-study-plan', [StudyPlanAIController::class, 'generate']);
