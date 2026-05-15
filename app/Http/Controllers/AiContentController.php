@@ -139,6 +139,7 @@ class AiContentController extends Controller
 
     public function generateQuiz(GenerateAiQuizRequest $request): JsonResponse
     {
+        set_time_limit(180);
         $userId = Auth::id();
 
         /** @var Subject $subject */

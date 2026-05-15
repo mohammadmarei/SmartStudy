@@ -155,7 +155,12 @@ class AiContentGenerator
                 );
 
                 $parsed = $this->parseJson($out);
-                $timeLimit = max(5, $questionCount * 2);
+                        $timeLimit = match ($difficulty) {
+            'easy' => 10,
+            'medium' => 20,
+            'hard' => 30,
+            default => 20,
+};
                 $quiz = AiQuiz::create([
                    'job_id' => $job->id,
                     'subject_id' => $subject->id,
