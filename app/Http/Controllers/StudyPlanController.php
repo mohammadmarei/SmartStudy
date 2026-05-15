@@ -1,33 +1,49 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\StudyPlan;
 use Illuminate\Http\Request;
 
 class StudyPlanController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = StudyPlan::with('subject');
+        $userId = auth()->id();
 
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->user_id);
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
         }
 
-        $plans = $query->latest()->get();
+        $plans = StudyPlan::with('subject')
+            ->where('user_id', $userId)
+            ->latest()
+            ->get();
 
         return response()->json($plans);
     }
 
     public function store(Request $request)
     {
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
             'subject_id' => 'required|exists:subjects,id',
             'goal' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'status' => 'required|string|in:Pending,Done,Missed',
         ]);
+
+        $validated['user_id'] = $userId;
 
         $plan = StudyPlan::create($validated);
 

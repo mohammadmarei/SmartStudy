@@ -14,8 +14,16 @@ class StudyPlanAIController extends Controller
         $this->studyPlanGeneratorService = $studyPlanGeneratorService;
     }
 
-    public function generate(int $userId): JsonResponse
+    public function generate(): JsonResponse
     {
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
         try {
             $plans = $this->studyPlanGeneratorService->generateForUser($userId);
 
