@@ -50,7 +50,7 @@ class AnthropicClient
                     'content-type' => 'application/json',
                     'accept' => 'application/json',
                 ])
-                ->timeout(60)
+                ->timeout(180)
                 ->post('/v1/messages', $payload);
         } catch (ConnectionException $e) {
             throw new \RuntimeException(
